@@ -1,0 +1,27 @@
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
+
+# Local secrets and credentials. Keep the example templates tracked.
+.env*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
+.spree/
+**/credentials.json
+
+# Local databases, backups, logs, uploads and runtime files.
+backups/
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+server/log/
+server/storage/
+server/tmp/

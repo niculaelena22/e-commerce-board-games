@@ -61,13 +61,18 @@ ARG SPREE_CLI_VERSION
 
 WORKDIR /dashboard
 COPY --from=ctx /dashboard-src /dashboard
-# Custom apps install their committed lockfile verbatim (--frozen-lockfile:
-# drift between package.json and the lockfile fails loudly instead of
-# silently re-resolving inside the image). The stock template ships no
-# lockfile, so it resolves fresh.
+# Custom apps install their committed lockfile verbatim: pnpm and npm lockfiles
+# are both supported. The stock template ships no lockfile, so it resolves fresh.
 RUN corepack enable pnpm && \
   if [ -f .spree-custom-app ]; then \
-    pnpm install --frozen-lockfile; \
+    if [ -f pnpm-lock.yaml ]; then \
+      pnpm install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+      npm ci; \
+    else \
+      echo "Custom dashboard requires pnpm-lock.yaml or package-lock.json." >&2; \
+      exit 1; \
+    fi; \
   else \
     npm pack "@spree/cli@${SPREE_CLI_VERSION}" --pack-destination /tmp && \
     tar -xzf /tmp/spree-cli-*.tgz -C /tmp && \
@@ -92,7 +97,14 @@ WORKDIR /seller-dashboard
 COPY --from=ctx /seller-dashboard-src /seller-dashboard
 RUN corepack enable pnpm && \
   if [ -f .spree-custom-app ]; then \
-    pnpm install --frozen-lockfile; \
+    if [ -f pnpm-lock.yaml ]; then \
+      pnpm install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+      npm ci; \
+    else \
+      echo "Custom seller panel requires pnpm-lock.yaml or package-lock.json." >&2; \
+      exit 1; \
+    fi; \
   else \
     npm pack "@spree/cli@${SPREE_CLI_VERSION}" --pack-destination /tmp && \
     tar -xzf /tmp/spree-cli-*.tgz -C /tmp && \

@@ -9,6 +9,7 @@ import type { ActiveFilters } from "@/types/filters";
 
 interface ListingFilterBarProps {
   filtersData: ProductFiltersResponse | null;
+  currency?: string;
   activeFilters: ActiveFilters;
   totalCount: number;
 }
@@ -20,6 +21,7 @@ interface ListingFilterBarProps {
  */
 export function ListingFilterBar({
   filtersData,
+  currency,
   activeFilters,
   totalCount,
 }: ListingFilterBarProps) {
@@ -52,6 +54,7 @@ export function ListingFilterBar({
       <FilterBar
         filtersData={filtersData}
         filtersLoading={false}
+        currency={currency}
         activeFilters={activeFilters}
         totalCount={totalCount}
         onFilterChange={handleFilterChange}

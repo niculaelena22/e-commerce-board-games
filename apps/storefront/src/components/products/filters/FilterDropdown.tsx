@@ -56,7 +56,10 @@ export function FilterDropdown({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align={align === "right" ? "end" : "start"}>
+      <DropdownMenuContent
+        align={align === "right" ? "end" : "start"}
+        className="w-max min-w-56 max-w-[calc(100vw-2rem)]"
+      >
         {children}
       </DropdownMenuContent>
     </DropdownMenu>

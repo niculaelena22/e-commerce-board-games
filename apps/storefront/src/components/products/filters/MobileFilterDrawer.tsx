@@ -8,14 +8,27 @@ import type {
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
+  getTokiFilterValue,
+  TOKI_GAME_FILTER_FIELDS,
+  updateTokiFilter,
+} from "@/components/products/filters/TokiGameFilters";
+
+import { Button } from "@/components/ui/button";
+
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+
+import {
+  clearActiveFilters,
   getActiveFilterCount,
+  getAvailabilityFilter,
   getAvailabilityLabel,
 } from "@/lib/utils/filters";
+
 import type { PriceBucket } from "@/lib/utils/price-buckets";
+
 import { findMatchingBucket } from "@/lib/utils/price-buckets";
+
 import {
   type ActiveFilters,
   type AvailabilityStatus,
@@ -24,22 +37,33 @@ import {
 
 interface MobileFilterDrawerProps {
   isOpen: boolean;
+
   onClose: () => void;
+
   filtersData: ProductFiltersResponse | null;
+
   activeFilters: ActiveFilters;
+
   priceBuckets: PriceBucket[];
+
   onApply: (filters: ActiveFilters) => void;
 }
 
 export function MobileFilterDrawer({
   isOpen,
+
   onClose,
+
   filtersData,
+
   activeFilters,
+
   priceBuckets,
+
   onApply,
 }: MobileFilterDrawerProps) {
   const t = useTranslations("products");
+
   const [stagedFilters, setStagedFilters] =
     useState<ActiveFilters>(activeFilters);
 
@@ -55,6 +79,7 @@ export function MobileFilterDrawer({
       const newOptionValues = prev.optionValues.includes(optionValueId)
         ? prev.optionValues.filter((id) => id !== optionValueId)
         : [...prev.optionValues, optionValueId];
+
       return { ...prev, optionValues: newOptionValues };
     });
   }, []);
@@ -68,17 +93,12 @@ export function MobileFilterDrawer({
   }, []);
 
   const handleClearAll = useCallback(() => {
-    setStagedFilters((prev) => ({
-      optionValues: [],
-      priceMin: undefined,
-      priceMax: undefined,
-      availability: undefined,
-      sortBy: prev.sortBy,
-    }));
+    setStagedFilters(clearActiveFilters);
   }, []);
 
   const handleApply = useCallback(() => {
     onApply(stagedFilters);
+
     onClose();
   }, [stagedFilters, onApply, onClose]);
 
@@ -108,7 +128,9 @@ export function MobileFilterDrawer({
           >
             <X className="w-6 h-6" />
           </Button>
+
           <h2 className="text-lg font-semibold uppercase">{t("filters")}</h2>
+
           <div className="w-10" />
         </div>
 
@@ -124,28 +146,36 @@ export function MobileFilterDrawer({
                     onToggle={handleOptionValueToggle}
                   />
                 );
-              case "price_range":
-                return (
-                  <MobilePriceSection
-                    key={filter.id}
-                    priceBuckets={priceBuckets}
-                    activeFilters={stagedFilters}
-                    onPriceChange={handlePriceChange}
-                  />
-                );
-              case "availability":
-                return (
-                  <MobileAvailabilitySection
-                    key={filter.id}
-                    filter={filter as AvailabilityFilter}
-                    selected={stagedFilters.availability}
-                    onChange={handleAvailabilityChange}
-                  />
-                );
+
               default:
                 return null;
             }
           })}
+
+          <MobilePriceSection
+            priceBuckets={priceBuckets}
+            activeFilters={stagedFilters}
+            onPriceChange={handlePriceChange}
+          />
+
+          <MobileAvailabilitySection
+            filter={getAvailabilityFilter(filtersData)}
+            selected={stagedFilters.availability}
+            onChange={handleAvailabilityChange}
+          />
+
+          {TOKI_GAME_FILTER_FIELDS.map((field) => (
+            <MobileTokiFilterSection
+              key={field.key}
+              field={field}
+              selectedValue={getTokiFilterValue(stagedFilters, field.key)}
+              onChange={(value) =>
+                setStagedFilters((prev) =>
+                  updateTokiFilter(prev, field.key, value),
+                )
+              }
+            />
+          ))}
         </div>
 
         <div className="border-t border-gray-200 p-4 space-y-2">
@@ -154,6 +184,7 @@ export function MobileFilterDrawer({
               {t("clearAllFiltersCount", { count: stagedCount })}
             </Button>
           )}
+
           <Button className="w-full" onClick={handleApply}>
             {t("showResults")}
           </Button>
@@ -163,13 +194,61 @@ export function MobileFilterDrawer({
   );
 }
 
+function MobileTokiFilterSection({
+  field,
+  selectedValue,
+  onChange,
+}: {
+  field: (typeof TOKI_GAME_FILTER_FIELDS)[number];
+  selectedValue: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+        {field.label}
+      </h3>
+
+      <div className="space-y-1">
+        {field.options.map((option) => {
+          const value = String(option.value);
+          const isSelected = selectedValue === value;
+
+          return (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => onChange(isSelected ? "" : value)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors ${
+                isSelected
+                  ? "bg-gray-50 font-medium text-gray-900"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span className="flex-1 text-left">{option.label}</span>
+              {isSelected && (
+                <Check className="w-4 h-4 text-primary shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function MobileOptionSection({
   filter,
+
   selectedValues,
+
   onToggle,
 }: {
   filter: OptionFilter;
+
   selectedValues: string[];
+
   onToggle: (id: string) => void;
 }) {
   const isColorFilter = filter.kind === "color_swatch";
@@ -179,10 +258,12 @@ function MobileOptionSection({
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
         {filter.label}
       </h3>
+
       {isColorFilter ? (
         <div className="space-y-1">
           {filter.options.map((option) => {
             const isSelected = selectedValues.includes(option.id);
+
             return (
               <button
                 key={option.id}
@@ -203,6 +284,7 @@ function MobileOptionSection({
                     option.image_url
                       ? {
                           backgroundImage: `url(${option.image_url})`,
+
                           backgroundSize: "cover",
                         }
                       : option.color_code
@@ -210,12 +292,15 @@ function MobileOptionSection({
                         : { backgroundColor: "#e5e7eb" }
                   }
                 />
+
                 <span
                   className={`text-sm flex-1 text-left ${isSelected ? "font-medium text-gray-900" : "text-gray-700"}`}
                 >
                   {option.label}
                 </span>
+
                 <span className="text-xs text-gray-400">({option.count})</span>
+
                 {isSelected && (
                   <Check className="w-4 h-4 text-primary shrink-0" />
                 )}
@@ -227,6 +312,7 @@ function MobileOptionSection({
         <div className="flex flex-wrap gap-2">
           {filter.options.map((option) => {
             const isSelected = selectedValues.includes(option.id);
+
             return (
               <button
                 key={option.id}
@@ -251,11 +337,15 @@ function MobileOptionSection({
 
 function MobilePriceSection({
   priceBuckets,
+
   activeFilters,
+
   onPriceChange,
 }: {
   priceBuckets: PriceBucket[];
+
   activeFilters: ActiveFilters;
+
   onPriceChange: (min?: number, max?: number) => void;
 }) {
   const t = useTranslations("products");
@@ -264,7 +354,9 @@ function MobilePriceSection({
 
   const selectedBucket = findMatchingBucket(
     priceBuckets,
+
     activeFilters.priceMin,
+
     activeFilters.priceMax,
   );
 
@@ -273,9 +365,11 @@ function MobilePriceSection({
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
         {t("price")}
       </h3>
+
       <div className="space-y-1">
         {priceBuckets.map((bucket) => {
           const isSelected = selectedBucket?.id === bucket.id;
+
           return (
             <button
               key={bucket.id}
@@ -295,6 +389,7 @@ function MobilePriceSection({
               }`}
             >
               <span className="flex-1 text-left">{bucket.label}</span>
+
               {isSelected && (
                 <Check className="w-4 h-4 text-primary shrink-0" />
               )}
@@ -308,11 +403,15 @@ function MobilePriceSection({
 
 function MobileAvailabilitySection({
   filter,
+
   selected,
+
   onChange,
 }: {
   filter: AvailabilityFilter;
+
   selected?: AvailabilityStatus;
+
   onChange: (value?: AvailabilityStatus) => void;
 }) {
   const t = useTranslations("products");
@@ -322,9 +421,11 @@ function MobileAvailabilitySection({
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
         {t("availability")}
       </h3>
+
       <div className="space-y-1">
         {filter.options.map((option) => {
           const isSelected = selected === option.id;
+
           return (
             <button
               key={option.id}
@@ -346,7 +447,9 @@ function MobileAvailabilitySection({
               <span className="flex-1 text-left">
                 {getAvailabilityLabel(option.id, t)}
               </span>
+
               <span className="text-xs text-gray-400">({option.count})</span>
+
               {isSelected && (
                 <Check className="w-4 h-4 text-primary shrink-0" />
               )}

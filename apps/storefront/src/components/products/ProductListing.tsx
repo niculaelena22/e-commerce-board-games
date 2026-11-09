@@ -146,6 +146,7 @@ async function ProductListingInner({
     <>
       <ListingFilterBar
         filtersData={filtersResponse}
+        currency={currency}
         activeFilters={state.filters}
         totalCount={totalCount}
       />

@@ -1,6 +1,6 @@
 import type { Category } from "@spree/sdk";
-import dynamic from "next/dynamic";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { connection } from "next/server";
 import { cache, Suspense } from "react";
 import { Footer, FooterCategoryLinks } from "@/components/layout/Footer";
@@ -109,8 +109,8 @@ async function StorefrontCategoryNavigation({
   if (rootCategories.length === 0) return null;
 
   return (
-    <nav aria-label="Category navigation" className="sr-only">
-      <CategoryLinks categories={rootCategories} basePath={basePath} />
+    <nav aria-label="Category navigation" className="max-w-[min(66vw,850px)]">
+      <div className="overflow-x-auto"><ul className="flex min-h-12 items-center gap-4 whitespace-nowrap text-sm font-semibold text-[#195e8b] xl:gap-6">{rootCategories.slice(0, 10).map((category) => <li key={category.id}><Link className="inline-flex min-h-11 items-center hover:text-[#0c426c] hover:underline underline-offset-4" href={`${basePath}/c/${category.permalink}`}>{category.name}</Link></li>)}</ul></div>
     </nav>
   );
 }
@@ -141,6 +141,7 @@ export default async function StorefrontLayout({
       <Header
         basePath={basePath}
         locale={locale as Locale}
+        desktopNavigation={<Suspense fallback={null}><StorefrontCategoryNavigation basePath={basePath} country={country} locale={locale} /></Suspense>}
         mobileNavigation={
           <Suspense fallback={<MobileNavigationFallback />}>
             <StorefrontMobileNavigation
@@ -151,13 +152,6 @@ export default async function StorefrontLayout({
           </Suspense>
         }
       />
-      <Suspense fallback={null}>
-        <StorefrontCategoryNavigation
-          basePath={basePath}
-          country={country}
-          locale={locale}
-        />
-      </Suspense>
       <MainContent className="flex-1">{children}</MainContent>
       <Footer
         basePath={basePath}

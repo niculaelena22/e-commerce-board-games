@@ -1,7 +1,6 @@
 "use client";
 
 import type {
-  AvailabilityFilter,
   OptionFilter,
   PriceRangeFilter,
   ProductFiltersResponse,
@@ -18,13 +17,28 @@ import { MobileFilterDrawer } from "@/components/products/filters/MobileFilterDr
 import { OptionDropdownContent } from "@/components/products/filters/OptionDropdownContent";
 import { PriceDropdownContent } from "@/components/products/filters/PriceDropdownContent";
 import { SortDropdownContent } from "@/components/products/filters/SortDropdownContent";
-import { getActiveFilterCount } from "@/lib/utils/filters";
+import {
+  getTokiFilterValue,
+  TOKI_GAME_FILTER_FIELDS,
+  updateTokiFilter,
+} from "@/components/products/filters/TokiGameFilters";
+import {
+  clearActiveFilters,
+  getActiveFilterCount,
+  getAvailabilityFilter,
+  removeTokiFilter,
+} from "@/lib/utils/filters";
 import { generatePriceBuckets } from "@/lib/utils/price-buckets";
-import type { ActiveFilters, AvailabilityStatus } from "@/types/filters";
+import type {
+  ActiveFilters,
+  AvailabilityStatus,
+  TokiFilterKey,
+} from "@/types/filters";
 
 interface FilterBarProps {
   filtersData: ProductFiltersResponse | null;
   filtersLoading: boolean;
+  currency?: string;
   activeFilters: ActiveFilters;
   totalCount: number;
   onFilterChange: (filters: ActiveFilters) => void;
@@ -33,6 +47,7 @@ interface FilterBarProps {
 export const FilterBar = memo(function FilterBar({
   filtersData,
   filtersLoading,
+  currency,
   activeFilters,
   totalCount,
   onFilterChange,
@@ -74,6 +89,13 @@ export const FilterBar = memo(function FilterBar({
     [activeFilters, onFilterChange],
   );
 
+  const handleRemoveTokiFilter = useCallback(
+    (key: TokiFilterKey) => {
+      onFilterChange(removeTokiFilter(activeFilters, key));
+    },
+    [activeFilters, onFilterChange],
+  );
+
   const handleSortChange = useCallback(
     (sortBy: string) => {
       onFilterChange({ ...activeFilters, sortBy });
@@ -83,28 +105,17 @@ export const FilterBar = memo(function FilterBar({
   );
 
   const clearFilters = useCallback(() => {
-    onFilterChange({
-      optionValues: [],
-      priceMin: undefined,
-      priceMax: undefined,
-      availability: undefined,
-      sortBy: activeFilters.sortBy,
-    });
-  }, [onFilterChange, activeFilters.sortBy]);
+    onFilterChange(clearActiveFilters(activeFilters));
+  }, [onFilterChange, activeFilters]);
 
   const priceBuckets = useMemo(() => {
-    if (!filtersData) return [];
-    const priceFilter = filtersData.filters.find(
+    const priceFilter = filtersData?.filters.find(
       (f) => f.type === "price_range",
     ) as PriceRangeFilter | undefined;
-    if (!priceFilter) return [];
-    return generatePriceBuckets(
-      priceFilter.min,
-      priceFilter.max,
-      priceFilter.currency,
-      { t, locale },
-    );
-  }, [filtersData, t, locale]);
+    const priceCurrency = priceFilter?.currency ?? currency;
+    if (!priceCurrency) return [];
+    return generatePriceBuckets(priceCurrency, { t, locale });
+  }, [filtersData, currency, t, locale]);
 
   const optionFilters = useMemo(() => {
     if (!filtersData) return [];
@@ -141,18 +152,58 @@ export const FilterBar = memo(function FilterBar({
     return null;
   }
 
-  const availabilityFilter = filtersData.filters.find(
-    (f) => f.type === "availability",
-  ) as AvailabilityFilter | undefined;
-
-  const hasPriceFilter =
-    filtersData.filters.some((f) => f.type === "price_range") &&
-    priceBuckets.length > 0;
+  const availabilityFilter = getAvailabilityFilter(filtersData);
+  const hasPriceFilter = priceBuckets.length > 0;
 
   return (
     <div className="mb-6">
       <div className="hidden md:flex items-center justify-between pb-4 border-b border-gray-100">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {TOKI_GAME_FILTER_FIELDS.map((field) => {
+            const value = getTokiFilterValue(activeFilters, field.key);
+
+            return (
+              <FilterDropdown
+                key={field.key}
+                label={field.label}
+                badgeCount={value ? 1 : 0}
+                isOpen={openDropdownId === `toki-${field.key}`}
+                onToggle={() => toggleDropdown(`toki-${field.key}`)}
+                onClose={closeDropdown}
+              >
+                <div className="w-64 p-4">
+                  <label
+                    htmlFor={`desktop-toki-${field.key}`}
+                    className="mb-2 block text-sm font-semibold text-[#245572]"
+                  >
+                    {field.label}
+                  </label>
+                  <select
+                    id={`desktop-toki-${field.key}`}
+                    value={value}
+                    onChange={(event) =>
+                      onFilterChange(
+                        updateTokiFilter(
+                          activeFilters,
+                          field.key,
+                          event.target.value,
+                        ),
+                      )
+                    }
+                    className="w-full rounded-xl border border-[#bddbea] bg-white px-3 py-2.5 text-sm text-[#245572] focus:border-[#126ca6] focus:outline-none focus:ring-2 focus:ring-[#126ca6]/20"
+                  >
+                    <option value="">Toate</option>
+                    {field.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </FilterDropdown>
+            );
+          })}
+
           {optionFilters.map((filter) => (
             <FilterDropdown
               key={filter.id}
@@ -186,21 +237,19 @@ export const FilterBar = memo(function FilterBar({
             </FilterDropdown>
           )}
 
-          {availabilityFilter && (
-            <FilterDropdown
-              label={t("availability")}
-              badgeCount={availabilityBadge}
-              isOpen={openDropdownId === "availability"}
-              onToggle={() => toggleDropdown("availability")}
-              onClose={closeDropdown}
-            >
-              <AvailabilityDropdownContent
-                filter={availabilityFilter}
-                selected={activeFilters.availability}
-                onChange={handleAvailabilityChange}
-              />
-            </FilterDropdown>
-          )}
+          <FilterDropdown
+            label={t("availability")}
+            badgeCount={availabilityBadge}
+            isOpen={openDropdownId === "availability"}
+            onToggle={() => toggleDropdown("availability")}
+            onClose={closeDropdown}
+          >
+            <AvailabilityDropdownContent
+              filter={availabilityFilter}
+              selected={activeFilters.availability}
+              onChange={handleAvailabilityChange}
+            />
+          </FilterDropdown>
         </div>
 
         <div className="flex items-center gap-3">
@@ -267,6 +316,7 @@ export const FilterBar = memo(function FilterBar({
           onRemoveOptionValue={(id) => handleOptionValueToggle(id)}
           onRemovePrice={() => handlePriceChange(undefined, undefined)}
           onRemoveAvailability={() => handleAvailabilityChange(undefined)}
+          onRemoveTokiFilter={handleRemoveTokiFilter}
           onClearAll={clearFilters}
         />
       )}

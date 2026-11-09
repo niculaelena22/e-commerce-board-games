@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheckBig, Package } from "lucide-react";
+import { CircleCheckBig, Download, Package } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -300,9 +300,20 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
 
       {/* Actions */}
       <div className="text-center">
-        <Button size="lg" asChild>
-          <Link href={`${basePath}/`}>{tc("continueShopping")}</Link>
-        </Button>
+        <div className="flex flex-col items-center gap-3">
+          <Button variant="outline" size="lg" asChild>
+            <a
+              href={`/api/orders/${encodeURIComponent(cartId)}/invoice`}
+              download
+            >
+              <Download />
+              {t("downloadPdf")}
+            </a>
+          </Button>
+          <Button size="lg" asChild>
+            <Link href={`${basePath}/`}>{tc("continueShopping")}</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

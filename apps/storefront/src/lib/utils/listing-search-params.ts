@@ -1,18 +1,10 @@
-/**
- * URL search params contract for product listing pages.
- *
- * All filter/sort/query state lives in the URL so that server components
- * can fetch deterministically and the back button works for free. This
- * module centralizes the parse/serialize logic so the server pages and
- * the client filter shim stay in sync.
- *
- * Pagination is intentionally NOT in the URL: listings use infinite
- * scroll, and the accumulating "how many pages have I scrolled through"
- * state is ephemeral — it lives in the client island and resets whenever
- * filters/sort/query change.
- */
 
-import type { ActiveFilters, AvailabilityStatus } from "@/types/filters";
+import type {
+  ActiveFilters,
+  AvailabilityStatus,
+  GameComplexity,
+  GameLanguage,
+} from "@/types/filters";
 import { isAvailabilityStatus } from "@/types/filters";
 
 export const LISTING_PARAM_KEYS = {
@@ -21,12 +13,19 @@ export const LISTING_PARAM_KEYS = {
   priceMin: "price_min",
   priceMax: "price_max",
   availability: "availability",
-  /** Repeated param: `?option=1&option=2`. */
   option: "option",
+
+  // Filtre TOKI
+  players: "players",
+  maxDuration: "max_duration",
+  playerAge: "player_age",
+  complexity: "complexity",
+  gameLanguage: "game_language",
 } as const;
 
-/** Keys the listing owns — used when rewriting a URL to drop stale params. */
-const LISTING_OWNED_KEYS = new Set<string>(Object.values(LISTING_PARAM_KEYS));
+const LISTING_OWNED_KEYS = new Set<string>(
+  Object.values(LISTING_PARAM_KEYS),
+);
 
 export interface ListingSearchParams {
   query?: string;
@@ -37,57 +36,133 @@ type RawSearchParams =
   | URLSearchParams
   | Record<string, string | string[] | undefined>;
 
-function readFirst(params: RawSearchParams, key: string): string | undefined {
+function readFirst(
+  params: RawSearchParams,
+  key: string,
+): string | undefined {
   if (params instanceof URLSearchParams) {
     return params.get(key) ?? undefined;
   }
+
   const raw = params[key];
-  if (Array.isArray(raw)) return raw[0];
-  return raw;
+  return Array.isArray(raw) ? raw[0] : raw;
 }
 
-function readAll(params: RawSearchParams, key: string): string[] {
+function readAll(
+  params: RawSearchParams,
+  key: string,
+): string[] {
   if (params instanceof URLSearchParams) {
     return params.getAll(key);
   }
+
   const raw = params[key];
+
   if (raw == null) return [];
   return Array.isArray(raw) ? raw : [raw];
 }
 
-function parsePositiveInt(value: string | undefined): number | undefined {
-  if (value === undefined) return undefined;
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed < 0) return undefined;
-  return parsed;
+function parseNonNegativeInt(
+  value: string | undefined,
+): number | undefined {
+  if (value === undefined || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isSafeInteger(parsed)
+    ? parsed
+    : undefined;
 }
 
-/** Parse a listing state from URL search params (server or client side). */
+function parsePositiveInt(
+  value: string | undefined,
+): number | undefined {
+  const parsed = parseNonNegativeInt(value);
+
+  return parsed !== undefined && parsed > 0
+    ? parsed
+    : undefined;
+}
+
+function parseComplexity(
+  value: string | undefined,
+): GameComplexity | undefined {
+  if (
+    value === "usor" ||
+    value === "mediu" ||
+    value === "avansat"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseLanguage(
+  value: string | undefined,
+): GameLanguage | undefined {
+  if (value === "romana" || value === "engleza") {
+    return value;
+  }
+
+  return undefined;
+}
+
 export function parseListingSearchParams(
   params: RawSearchParams,
 ): ListingSearchParams {
   const query =
-    readFirst(params, LISTING_PARAM_KEYS.query)?.trim() || undefined;
+    readFirst(params, LISTING_PARAM_KEYS.query)?.trim() ||
+    undefined;
 
-  const availabilityRaw = readFirst(params, LISTING_PARAM_KEYS.availability);
+  const availabilityRaw = readFirst(
+    params,
+    LISTING_PARAM_KEYS.availability,
+  );
+
   const availability: AvailabilityStatus | undefined =
     availabilityRaw && isAvailabilityStatus(availabilityRaw)
       ? availabilityRaw
       : undefined;
 
-  const priceMin = parsePositiveInt(
+  const priceMin = parseNonNegativeInt(
     readFirst(params, LISTING_PARAM_KEYS.priceMin),
   );
-  const priceMax = parsePositiveInt(
+
+  const priceMax = parseNonNegativeInt(
     readFirst(params, LISTING_PARAM_KEYS.priceMax),
   );
 
-  const optionValues = readAll(params, LISTING_PARAM_KEYS.option).filter(
-    Boolean,
-  );
+  const optionValues = readAll(
+    params,
+    LISTING_PARAM_KEYS.option,
+  ).filter(Boolean);
 
   const sortBy =
-    readFirst(params, LISTING_PARAM_KEYS.sort)?.trim() || undefined;
+    readFirst(params, LISTING_PARAM_KEYS.sort)?.trim() ||
+    undefined;
+
+  const players = parsePositiveInt(
+    readFirst(params, LISTING_PARAM_KEYS.players),
+  );
+
+  const maxDuration = parsePositiveInt(
+    readFirst(params, LISTING_PARAM_KEYS.maxDuration),
+  );
+
+  const playerAge = parsePositiveInt(
+    readFirst(params, LISTING_PARAM_KEYS.playerAge),
+  );
+
+  const complexity = parseComplexity(
+    readFirst(params, LISTING_PARAM_KEYS.complexity),
+  );
+
+  const gameLanguage = parseLanguage(
+    readFirst(params, LISTING_PARAM_KEYS.gameLanguage),
+  );
 
   const filters: ActiveFilters = {
     optionValues,
@@ -95,24 +170,29 @@ export function parseListingSearchParams(
     ...(priceMax !== undefined ? { priceMax } : {}),
     ...(availability ? { availability } : {}),
     ...(sortBy ? { sortBy } : {}),
+    ...(players !== undefined ? { players } : {}),
+    ...(maxDuration !== undefined ? { maxDuration } : {}),
+    ...(playerAge !== undefined ? { playerAge } : {}),
+    ...(complexity ? { complexity } : {}),
+    ...(gameLanguage ? { gameLanguage } : {}),
   };
 
   return { query, filters };
 }
 
-/**
- * Build a new URLSearchParams representing the given listing state,
- * preserving any non-listing params already present in `base`.
- */
 export function buildListingSearchParams(
   base: URLSearchParams,
-  next: Partial<ListingSearchParams> & { query?: string },
+  next: Partial<ListingSearchParams> & {
+    query?: string;
+  },
 ): URLSearchParams {
   const out = new URLSearchParams();
 
-  // Preserve any params that don't belong to the listing contract.
+  // Păstrăm parametrii care nu aparțin filtrelor.
   for (const [key, value] of base.entries()) {
-    if (!LISTING_OWNED_KEYS.has(key)) out.append(key, value);
+    if (!LISTING_OWNED_KEYS.has(key)) {
+      out.append(key, value);
+    }
   }
 
   if (next.query) {
@@ -120,39 +200,80 @@ export function buildListingSearchParams(
   }
 
   const filters = next.filters;
+
   if (filters) {
     if (filters.priceMin !== undefined) {
-      out.set(LISTING_PARAM_KEYS.priceMin, String(filters.priceMin));
+      out.set(
+        LISTING_PARAM_KEYS.priceMin,
+        String(filters.priceMin),
+      );
     }
+
     if (filters.priceMax !== undefined) {
-      out.set(LISTING_PARAM_KEYS.priceMax, String(filters.priceMax));
+      out.set(
+        LISTING_PARAM_KEYS.priceMax,
+        String(filters.priceMax),
+      );
     }
+
     if (filters.availability) {
-      out.set(LISTING_PARAM_KEYS.availability, filters.availability);
+      out.set(
+        LISTING_PARAM_KEYS.availability,
+        filters.availability,
+      );
     }
+
     if (filters.sortBy) {
       out.set(LISTING_PARAM_KEYS.sort, filters.sortBy);
     }
+
     for (const optionValue of filters.optionValues) {
       out.append(LISTING_PARAM_KEYS.option, optionValue);
+    }
+
+    // Filtre TOKI
+    if (filters.players !== undefined) {
+      out.set(
+        LISTING_PARAM_KEYS.players,
+        String(filters.players),
+      );
+    }
+
+    if (filters.maxDuration !== undefined) {
+      out.set(
+        LISTING_PARAM_KEYS.maxDuration,
+        String(filters.maxDuration),
+      );
+    }
+
+    if (filters.playerAge !== undefined) {
+      out.set(
+        LISTING_PARAM_KEYS.playerAge,
+        String(filters.playerAge),
+      );
+    }
+
+    if (filters.complexity) {
+      out.set(
+        LISTING_PARAM_KEYS.complexity,
+        filters.complexity,
+      );
+    }
+
+    if (filters.gameLanguage) {
+      out.set(
+        LISTING_PARAM_KEYS.gameLanguage,
+        filters.gameLanguage,
+      );
     }
   }
 
   return out;
 }
 
-/**
- * Serialize the full listing state into a stable key string. Used as
- * the React key on InfiniteProductList (so every filter / sort / query
- * change remounts the island with fresh server-provided page 1 data)
- * and as the stateKey on ListingAnalytics (so each distinct listing
- * state fires a view_item_list event exactly once).
- *
- * Uses JSON.stringify rather than a delimiter-joined string so values
- * containing special characters (e.g. a search query with a pipe)
- * can't produce colliding keys for different states.
- */
-export function listingKey(state: ListingSearchParams): string {
+export function listingKey(
+  state: ListingSearchParams,
+): string {
   return JSON.stringify({
     q: state.query ?? "",
     s: state.filters.sortBy ?? "",
@@ -160,5 +281,12 @@ export function listingKey(state: ListingSearchParams): string {
     pMax: state.filters.priceMax ?? "",
     a: state.filters.availability ?? "",
     o: [...state.filters.optionValues].sort(),
+
+    // Filtre TOKI
+    players: state.filters.players ?? "",
+    duration: state.filters.maxDuration ?? "",
+    age: state.filters.playerAge ?? "",
+    complexity: state.filters.complexity ?? "",
+    language: state.filters.gameLanguage ?? "",
   });
 }

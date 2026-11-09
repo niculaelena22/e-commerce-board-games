@@ -6,6 +6,7 @@ import type {
   OrderListParams,
   PaginatedResponse,
 } from "@spree/sdk";
+import { SpreeError } from "@spree/sdk";
 import {
   DEFAULT_SURFACE,
   getCartOptions,
@@ -66,4 +67,34 @@ export async function getOrder(
     const options = await getCartOptions(surface);
     return getClientForSurface(surface).orders.get(id, params, options);
   }, null);
+}
+
+/**
+ * Load an order for a private document download, preserving Spree's customer
+ * JWT or guest cart-token authorization instead of masking API errors.
+ */
+export async function getOrderForDocument(
+  id: string,
+): Promise<Order | OrderGroup> {
+  const { token, spreeToken, ...requestOptions } = await getCartOptions();
+  const client = getClient();
+
+  if (token) {
+    return withAuthRefresh((authOptions) =>
+      client.orders.get(id, {}, { ...requestOptions, ...authOptions }),
+    ) as Promise<Order | OrderGroup>;
+  }
+
+  if (spreeToken) {
+    return client.orders.get(
+      id,
+      {},
+      { ...requestOptions, spreeToken },
+    ) as Promise<Order | OrderGroup>;
+  }
+
+  throw new SpreeError(
+    { error: { code: "unauthorized", message: "Authentication required" } },
+    401,
+  );
 }

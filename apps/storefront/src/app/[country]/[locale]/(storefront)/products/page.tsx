@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ProductListing } from "@/components/products/ProductListing";
 import { resolveCurrency } from "@/lib/data/markets";
@@ -58,6 +59,15 @@ export default async function ProductsPage({
         )}
       </div>
 
+      <div className="mb-5 flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-gray-600">Filtrare rapidă:</span>
+        <Link
+          href={`${basePath}/products?price_max=200`}
+          className="rounded-full border border-[#bddbea] bg-[#eef7fd] px-4 py-2 font-medium text-[#155e8c] hover:bg-[#dceefa]"
+        >
+          Până la 200 lei
+        </Link>
+      </div>
       <ProductListing
         state={listingState}
         basePath={basePath}

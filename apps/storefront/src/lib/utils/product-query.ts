@@ -34,6 +34,34 @@ export function buildProductQueryParams(
     params.out_of_stock = true;
   }
 
+  if (filters.players !== undefined) {
+    params.cf_custom_min_players_lteq = String(filters.players);
+    params.cf_custom_max_players_gteq = String(filters.players);
+  }
+
+  if (filters.maxDuration !== undefined) {
+    params.cf_custom_max_play_time_lteq = String(filters.maxDuration);
+  }
+
+  if (filters.playerAge !== undefined) {
+    params.cf_custom_min_age_lteq = String(filters.playerAge);
+  }
+
+  if (filters.complexity) {
+    params.cf_custom_complexity_i_cont = {
+      usor: "u",
+      mediu: "med",
+      avansat: "avan",
+    }[filters.complexity];
+  }
+
+  if (filters.gameLanguage) {
+    params.cf_custom_game_language_i_cont = {
+      romana: "rom",
+      engleza: "eng",
+    }[filters.gameLanguage];
+  }
+
   if (filters.sortBy && filters.sortBy !== "manual") {
     // Read from the URL as text; the API validates the value.
     params.sort = filters.sortBy as ProductSort;

@@ -39,6 +39,7 @@ interface HeaderProps {
   basePath: string;
   locale: Locale;
   mobileNavigation: ReactNode;
+  desktopNavigation: ReactNode;
 }
 
 interface HeaderMobileMenuProps {
@@ -63,6 +64,7 @@ export async function Header({
   basePath,
   locale,
   mobileNavigation,
+  desktopNavigation,
 }: HeaderProps) {
   const t = await getTranslations({ locale, namespace: "header" });
   const wholesaleEnabled = isWholesaleEnabled();
@@ -70,20 +72,21 @@ export async function Header({
   return (
     <SearchToggle
       basePath={basePath}
-      left={mobileNavigation}
+      left={<><div className="lg:hidden">{mobileNavigation}</div><div className="hidden lg:flex items-center">
+        <Link href={basePath || "/"} aria-label="Acasă TOKI"><Image src="/TOKI-LOGO.png" alt={storeName} width={1241} height={700} className="h-12 w-auto" priority /></Link>
+      </div></>}
       center={
-        <Link href={basePath || "/"} className="flex items-center min-w-0">
+        <><div className="hidden lg:block">{desktopNavigation}</div><Link href={basePath || "/"} className="flex items-center min-w-0 lg:hidden">
           <Image
-            src="/toki.png"
+            src="/TOKI-LOGO.png"
             alt={storeName}
-            width={90}
-            height={32}
-            className="max-w-full object-contain"
-            style={{ width: "auto", height: "auto" }}
+            width={1241}
+            height={700}
+            className="h-10 w-auto max-w-full object-contain"
             fetchPriority="high"
             loading="eager"
           />
-        </Link>
+        </Link></>
       }
       rightStart={
         <div className="hidden lg:flex lg:items-center lg:gap-1">

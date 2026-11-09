@@ -9,7 +9,7 @@ import {
   findMatchingBucket,
   type PriceBucket,
 } from "@/lib/utils/price-buckets";
-import type { ActiveFilters } from "@/types/filters";
+import type { ActiveFilters, TokiFilterKey } from "@/types/filters";
 
 interface FilterChipsProps {
   activeFilters: ActiveFilters;
@@ -18,6 +18,7 @@ interface FilterChipsProps {
   onRemoveOptionValue: (optionValueId: string) => void;
   onRemovePrice: () => void;
   onRemoveAvailability: () => void;
+  onRemoveTokiFilter: (key: TokiFilterKey) => void;
   onClearAll: () => void;
 }
 
@@ -28,6 +29,7 @@ export function FilterChips({
   onRemoveOptionValue,
   onRemovePrice,
   onRemoveAvailability,
+  onRemoveTokiFilter,
   onClearAll,
 }: FilterChipsProps) {
   const t = useTranslations("products");
@@ -81,6 +83,66 @@ export function FilterChips({
       label: getAvailabilityLabel(activeFilters.availability, t),
       onRemove: onRemoveAvailability,
     });
+  }
+
+  const tokiValues: {
+    key: TokiFilterKey;
+    label: string;
+    value: string | number | undefined;
+  }[] = [
+    {
+      key: "players",
+      label: "Număr de jucători",
+      value: activeFilters.players,
+    },
+    {
+      key: "maxDuration",
+      label: "Durată maximă",
+      value:
+        activeFilters.maxDuration !== undefined
+          ? `${activeFilters.maxDuration} minute`
+          : undefined,
+    },
+    {
+      key: "playerAge",
+      label: "Vârsta jucătorului",
+      value:
+        activeFilters.playerAge !== undefined
+          ? `${activeFilters.playerAge} ani`
+          : undefined,
+    },
+    {
+      key: "complexity",
+      label: "Complexitate",
+      value:
+        activeFilters.complexity === "usor"
+          ? "Ușor"
+          : activeFilters.complexity === "mediu"
+            ? "Mediu"
+            : activeFilters.complexity === "avansat"
+              ? "Avansat"
+              : undefined,
+    },
+    {
+      key: "gameLanguage",
+      label: "Limba jocului",
+      value:
+        activeFilters.gameLanguage === "romana"
+          ? "Română"
+          : activeFilters.gameLanguage === "engleza"
+            ? "Engleză"
+            : undefined,
+    },
+  ];
+
+  for (const filter of tokiValues) {
+    if (filter.value !== undefined) {
+      chips.push({
+        key: `toki-${filter.key}`,
+        label: `${filter.label}: ${filter.value}`,
+        onRemove: () => onRemoveTokiFilter(filter.key),
+      });
+    }
   }
 
   if (chips.length === 0) return null;

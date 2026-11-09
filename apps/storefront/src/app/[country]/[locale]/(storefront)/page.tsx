@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FeaturedProductsSection } from "@/components/home/FeaturedProductsSection";
 import { HeroSection } from "@/components/home/HeroSection";
-import { TokiAssistant } from "@/components/home/TokiAssistant";
+import { TokiThemes } from "@/components/home/TokiThemes";
 import { TokiBoard } from "@/components/home/TokiBoard";
 import { WholesaleSection } from "@/components/home/WholesaleSection";
 import { resolveCurrency } from "@/lib/data/markets";
@@ -29,6 +29,7 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <div>
       <HeroSection basePath={basePath} locale={locale} />
+      <TokiThemes basePath={basePath} />
       <FeaturedProductsSection
         basePath={basePath}
         locale={locale}
@@ -36,7 +37,6 @@ export default async function HomePage({ params }: HomePageProps) {
         currency={currency}
       />
       <TokiBoard basePath={basePath} />
-      <TokiAssistant />
       <WholesaleSection basePath={basePath} locale={locale} />
     </div>
   );

@@ -1,6 +1,6 @@
 import type { Order, OrderGroup } from "@spree/sdk";
 import { formatMoney } from "@spree/sdk";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AddressBlock } from "@/components/order/AddressBlock";
@@ -8,6 +8,7 @@ import { FulfillmentBlock } from "@/components/order/FulfillmentBlock";
 import { LineItemCard } from "@/components/order/LineItemCard";
 import { OrderTotals } from "@/components/order/OrderTotals";
 import { PaymentInfo } from "@/components/order/PaymentInfo";
+import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/utils/format";
 import { toPurchase } from "@/lib/utils/purchase";
 
@@ -50,6 +51,15 @@ export async function OrderDetail({
       <p className="text-sm text-gray-500 mt-1 mb-6">
         {t("placedOn", { date: formatDateTime(purchase.completed_at, locale) })}
       </p>
+      <Button variant="outline" className="mb-6" asChild>
+        <a
+          href={`/api/orders/${encodeURIComponent(purchase.totals.id)}/invoice`}
+          download
+        >
+          <Download />
+          {t("downloadPdf")}
+        </a>
+      </Button>
 
       {/* Walked per seller order: a parcel with no manifest falls back to its
           own seller's items, and a seller order with no parcels yet still

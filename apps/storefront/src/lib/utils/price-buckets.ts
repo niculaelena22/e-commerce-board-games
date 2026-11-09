@@ -1,5 +1,3 @@
-import { compareMoney, isDecimalString } from "@spree/sdk";
-
 export interface PriceBucket {
   id: string;
   label: string;
@@ -7,7 +5,13 @@ export interface PriceBucket {
   max?: number;
 }
 
-const THRESHOLDS = [50, 100, 200];
+const PRICE_RANGES = [
+  { id: "under-50", max: 50, kind: "under" },
+  { id: "50-100", min: 50, max: 100, kind: "range" },
+  { id: "100-200", min: 100, max: 200, kind: "range" },
+  { id: "200-500", min: 200, max: 500, kind: "range" },
+  { id: "500-plus", min: 500, kind: "above" },
+] as const;
 
 function formatCurrency(
   amount: number,
@@ -37,61 +41,48 @@ interface BucketLabelOptions {
 }
 
 /**
- * Buckets for the price filter. The range comes from the API as decimal
- * strings; the thresholds are whole amounts in the currency.
+ * Fixed price buckets keep the same useful choices available even when the
+ * current catalog only contains products in one price range.
  */
 export function generatePriceBuckets(
-  filterMin: string,
-  filterMax: string,
   currency: string,
   options?: BucketLabelOptions,
 ): PriceBucket[] {
   const { t, locale } = options || {};
-  const buckets: PriceBucket[] = [];
-  if (!isDecimalString(filterMin) || !isDecimalString(filterMax))
-    return buckets;
-
-  const below = (amount: string, threshold: number) =>
-    compareMoney(amount, String(threshold)) < 0;
-  const above = (amount: string, threshold: number) =>
-    compareMoney(amount, String(threshold)) > 0;
-
-  if (below(filterMin, THRESHOLDS[0])) {
-    const price = formatCurrency(THRESHOLDS[0], currency, locale);
-    buckets.push({
-      id: `under-${THRESHOLDS[0]}`,
-      label: t ? t("priceUnder", { price }) : `Under ${price}`,
-      max: THRESHOLDS[0],
-    });
-  }
-
-  for (let i = 0; i < THRESHOLDS.length - 1; i++) {
-    if (
-      above(filterMax, THRESHOLDS[i]) &&
-      below(filterMin, THRESHOLDS[i + 1])
-    ) {
-      const min = formatCurrency(THRESHOLDS[i], currency, locale);
-      const max = formatCurrency(THRESHOLDS[i + 1], currency, locale);
-      buckets.push({
-        id: `${THRESHOLDS[i]}-${THRESHOLDS[i + 1]}`,
-        label: t ? t("priceRangeBucket", { min, max }) : `${min} - ${max}`,
-        min: THRESHOLDS[i],
-        max: THRESHOLDS[i + 1],
-      });
+  return PRICE_RANGES.map((bucket) => {
+    if (bucket.kind === "under") {
+      const { id, max } = bucket;
+      const price = formatCurrency(max, currency, locale);
+      return {
+        id,
+        label: t ? t("priceUnder", { price }) : `Under ${price}`,
+        max,
+      };
     }
-  }
 
-  const lastThreshold = THRESHOLDS[THRESHOLDS.length - 1];
-  if (above(filterMax, lastThreshold)) {
-    const price = formatCurrency(lastThreshold, currency, locale);
-    buckets.push({
-      id: `${lastThreshold}-plus`,
-      label: t ? t("priceAbove", { price }) : `${price}+`,
-      min: lastThreshold,
-    });
-  }
+    if (bucket.kind === "above") {
+      const { id, min } = bucket;
+      const price = formatCurrency(min, currency, locale);
+      return {
+        id,
+        label: t ? t("priceAbove", { price }) : `${price}+`,
+        min,
+      };
+    }
 
-  return buckets;
+    const { id, min, max } = bucket;
+    const minLabel = formatCurrency(min, currency, locale);
+    const maxLabel = formatCurrency(max, currency, locale);
+
+    return {
+      id,
+      label: t
+        ? t("priceRangeBucket", { min: minLabel, max: maxLabel })
+        : `${minLabel} - ${maxLabel}`,
+      min,
+      max,
+    };
+  });
 }
 
 export function findMatchingBucket(

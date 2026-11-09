@@ -37,6 +37,12 @@ function spreeImagePatterns(): RemotePattern[] {
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/api/orders/*/invoice": [
+      "./node_modules/@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff",
+      "./node_modules/@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff",
+    ],
+  },
   allowedDevOrigins: [
     "shop.lvh.me",
     "*.trycloudflare.com",

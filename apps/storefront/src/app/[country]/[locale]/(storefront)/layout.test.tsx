@@ -44,9 +44,10 @@ describe("StorefrontLayout", () => {
 
     expect(layout.type).toBe(Fragment);
 
-    const [skipLink, header, hiddenNavigation, main, footer] = Children.toArray(
-      layout.props.children,
-    ) as ReactElement<LayoutElementProps>[];
+    const [skipLink, , header, hiddenNavigation, main, footer] =
+      Children.toArray(
+        layout.props.children,
+      ) as ReactElement<LayoutElementProps>[];
 
     expect(skipLink.type).toBe(SkipLink);
     expect(header.type).toBe(Header);

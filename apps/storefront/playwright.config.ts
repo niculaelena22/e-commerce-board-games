@@ -41,7 +41,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "./scripts/e2e/dev-with-env.sh",
+    command: "bash ./scripts/e2e/dev-with-env.sh",
     url: "http://localhost:3001/us/en",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

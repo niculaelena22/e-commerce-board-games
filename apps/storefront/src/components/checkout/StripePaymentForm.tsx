@@ -6,10 +6,10 @@ import {
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-import { type StripeElementLocale } from "@stripe/stripe-js";
+import type { StripeElementLocale } from "@stripe/stripe-js";
 import { CircleAlert } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { stripePromise } from "@/lib/utils/stripe";
 
@@ -50,8 +50,7 @@ function StripePaymentFormInner({
       });
 
       if (result.error) {
-        const message =
-          result.error.message || t("paymentProcessingError");
+        const message = result.error.message || t("paymentProcessingError");
         setError(message);
         return { error: message };
       }

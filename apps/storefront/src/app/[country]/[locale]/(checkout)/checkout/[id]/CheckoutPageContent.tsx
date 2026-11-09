@@ -394,7 +394,7 @@ function CheckoutPageContentInner({
         if (updateResult.cart) {
           setCart(updateResult.cart);
         }
-      } catch(error) {
+      } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
         } else {

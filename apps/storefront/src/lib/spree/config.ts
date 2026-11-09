@@ -26,14 +26,14 @@ export function getClient(): Client {
   if (!_client) {
     const baseUrl = process.env.SPREE_API_URL;
     const publishableKey = process.env.SPREE_PUBLISHABLE_KEY;
-  if (baseUrl && publishableKey) {
-    initSpreeNext({
-      baseUrl,
-      publishableKey,
-      defaultLocale: "ro",
-      defaultCountry: "ro",
-      defaultCurrency: "RON",
-    });
+    if (baseUrl && publishableKey) {
+      initSpreeNext({
+        baseUrl,
+        publishableKey,
+        defaultLocale: "ro",
+        defaultCountry: "ro",
+        defaultCurrency: "RON",
+      });
     } else {
       throw new Error(
         "Spree client is not configured. Either call initSpreeNext() or set SPREE_API_URL and SPREE_PUBLISHABLE_KEY environment variables.",

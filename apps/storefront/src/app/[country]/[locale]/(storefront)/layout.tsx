@@ -1,6 +1,6 @@
 import type { Category } from "@spree/sdk";
-import Link from "next/link";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { connection } from "next/server";
 import { cache, Suspense } from "react";
 import { Footer, FooterCategoryLinks } from "@/components/layout/Footer";

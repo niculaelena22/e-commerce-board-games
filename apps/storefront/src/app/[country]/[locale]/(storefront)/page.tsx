@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { FeaturedProductsSection } from "@/components/home/FeaturedProductsSection";
 import { HeroSection } from "@/components/home/HeroSection";
-import { TokiBoard } from "@/components/home/TokiBoard";
 import { TokiAssistant } from "@/components/home/TokiAssistant";
+import { TokiBoard } from "@/components/home/TokiBoard";
 import { WholesaleSection } from "@/components/home/WholesaleSection";
 import { resolveCurrency } from "@/lib/data/markets";
 import { generateHomeMetadata } from "@/lib/metadata/home";

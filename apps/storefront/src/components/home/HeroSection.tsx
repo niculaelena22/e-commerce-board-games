@@ -1,6 +1,6 @@
+import { Dices, Heart, Rabbit, Spade } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Dices, Heart, Rabbit, Spade } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
 
@@ -81,7 +81,9 @@ export async function HeroSection({ basePath, locale }: HeroSectionProps) {
           <div className="absolute left-[3%] top-[8%] flex h-[112px] w-[78px] rotate-[-12deg] items-center justify-center rounded-2xl border border-primary-100 bg-white text-[#c67c73] shadow-lg sm:left-[5%] sm:h-[136px] sm:w-[94px]">
             <div className="absolute left-3 top-2 text-sm leading-none">♥</div>
             <Heart className="size-8" strokeWidth={1.5} />
-            <div className="absolute bottom-2 right-3 rotate-180 text-sm leading-none">♥</div>
+            <div className="absolute bottom-2 right-3 rotate-180 text-sm leading-none">
+              ♥
+            </div>
           </div>
 
           <div className="absolute right-[1%] top-[1%] flex size-20 rotate-[8deg] items-center justify-center rounded-full border-[6px] border-white bg-[#e6f0e8] text-[#527767] shadow-md sm:right-[4%] sm:top-[2%] sm:size-24">

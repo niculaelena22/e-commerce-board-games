@@ -36,11 +36,7 @@ export function FooterCategoryLinks({
   ));
 }
 
-export async function Footer({
-  basePath,
-  locale,
-  categoryLinks,
-}: FooterProps) {
+export async function Footer({ basePath, locale, categoryLinks }: FooterProps) {
   const t = await getTranslations({
     locale,
     namespace: "footer",
@@ -57,7 +53,6 @@ export async function Footer({
     <footer className="bg-primary-900 text-gray-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
-
           {/* TOKI - Brand */}
           <div className="col-span-1 md:col-span-2">
             <span className="font-display inline-flex items-center gap-2 text-2xl font-semibold text-white">
@@ -65,9 +60,7 @@ export async function Footer({
               {storeName}
             </span>
 
-            <p className="mt-4 text-sm text-primary-100">
-              {t("description")}
-            </p>
+            <p className="mt-4 text-sm text-primary-100">{t("description")}</p>
           </div>
 
           {/* Magazin */}

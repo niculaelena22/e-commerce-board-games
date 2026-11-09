@@ -1,13 +1,5 @@
-
 import type { CustomField } from "@spree/sdk";
-import {
-  BarChart3,
-  Cake,
-  Clock3,
-  Languages,
-  Tag,
-  Users,
-} from "lucide-react";
+import { BarChart3, Cake, Clock3, Languages, Tag, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
@@ -40,11 +32,7 @@ function formatNumber(value: unknown): string {
     : String(value);
 }
 
-function renderValue(
-  field: CustomField,
-  yes: string,
-  no: string,
-): ReactNode {
+function renderValue(field: CustomField, yes: string, no: string): ReactNode {
   switch (field.field_type) {
     case "boolean":
       return field.value ? yes : no;
@@ -110,19 +98,12 @@ function buildDisplayItems(
     const max = maxPlayers ? formatNumber(maxPlayers.value) : "";
 
     const value =
-      min && max
-        ? min === max
-          ? min
-          : `${min}–${max}`
-        : min || max;
+      min && max ? (min === max ? min : `${min}–${max}`) : min || max;
 
-    addItem(
-      "players",
-      "Număr de jucători",
-      `${value} jucători`,
-      Users,
-      [minPlayers, maxPlayers],
-    );
+    addItem("players", "Număr de jucători", `${value} jucători`, Users, [
+      minPlayers,
+      maxPlayers,
+    ]);
   }
 
   // Vârsta recomandată
@@ -147,19 +128,12 @@ function buildDisplayItems(
     const max = maxDuration ? formatNumber(maxDuration.value) : "";
 
     const value =
-      min && max
-        ? min === max
-          ? min
-          : `${min}–${max}`
-        : min || max;
+      min && max ? (min === max ? min : `${min}–${max}`) : min || max;
 
-    addItem(
-      "duration",
-      "Durata jocului",
-      `${value} min`,
-      Clock3,
-      [minDuration, maxDuration],
-    );
+    addItem("duration", "Durata jocului", `${value} min`, Clock3, [
+      minDuration,
+      maxDuration,
+    ]);
   }
 
   // Limba jocului
@@ -192,13 +166,9 @@ function buildDisplayItems(
   fields.forEach((field) => {
     if (usedIds.has(String(field.id))) return;
 
-    addItem(
-      String(field.id),
-      field.label,
-      renderValue(field, yes, no),
-      Tag,
-      [field],
-    );
+    addItem(String(field.id), field.label, renderValue(field, yes, no), Tag, [
+      field,
+    ]);
   });
 
   return items;
@@ -212,20 +182,14 @@ export function ProductCustomFields({
   // Nu afișăm câmpurile fără valori
   const fields = (customFields ?? []).filter(
     (field) =>
-      field.value !== null &&
-      field.value !== undefined &&
-      field.value !== "",
+      field.value !== null && field.value !== undefined && field.value !== "",
   );
 
   if (fields.length === 0) {
     return null;
   }
 
-  const items = buildDisplayItems(
-    fields,
-    t("yes"),
-    t("no"),
-  );
+  const items = buildDisplayItems(fields, t("yes"), t("no"));
 
   if (items.length === 0) {
     return null;
@@ -233,9 +197,7 @@ export function ProductCustomFields({
 
   return (
     <section className="mt-10 border-t pt-8">
-      <h2 className="mb-5 text-xl font-semibold text-gray-900">
-        Detalii joc
-      </h2>
+      <h2 className="mb-5 text-xl font-semibold text-gray-900">Detalii joc</h2>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {items.map((item) => {
@@ -251,9 +213,7 @@ export function ProductCustomFields({
               </div>
 
               <div className="min-w-0">
-                <p className="text-xs text-gray-500">
-                  {item.label}
-                </p>
+                <p className="text-xs text-gray-500">{item.label}</p>
 
                 <div className="mt-1 text-sm font-semibold text-gray-900">
                   {item.value}

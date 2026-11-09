@@ -15,10 +15,6 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
-import {
-  AddressSelector,
-  groupByBook,
-} from "./AddressSelector";
 import { Input } from "@/components/ui/input";
 import type { User } from "@/contexts/AuthContext";
 import { useCountryStates } from "@/hooks/useCountryStates";
@@ -28,6 +24,7 @@ import {
   formDataToAddress,
   updateAddressField,
 } from "@/lib/utils/address";
+import { AddressSelector, groupByBook } from "./AddressSelector";
 
 interface AddressSectionProps {
   cart: Cart;

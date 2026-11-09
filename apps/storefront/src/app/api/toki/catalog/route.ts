@@ -11,17 +11,27 @@ export async function GET() {
       id: String(product.id),
       name: product.name,
       slug: product.slug,
-      description: (product.description ?? "").replace(/<[^>]*>/g, " ").slice(0, 800),
+      description: (product.description ?? "")
+        .replace(/<[^>]*>/g, " ")
+        .slice(0, 800),
       image: product.thumbnail_url ?? null,
-      price: product.price ? `${product.price.amount} ${product.price.currency}` : null,
+      price: product.price
+        ? `${product.price.amount} ${product.price.currency}`
+        : null,
       fields: (product.custom_fields ?? []).map((field) => ({
         label: field.label,
         value: String(field.value ?? ""),
       })),
     }));
-    return NextResponse.json({ products }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { products },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     console.error("TOKI catalog error", error);
-    return NextResponse.json({ error: "Catalogul nu este disponibil momentan." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Catalogul nu este disponibil momentan." },
+      { status: 503 },
+    );
   }
 }

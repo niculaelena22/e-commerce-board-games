@@ -14,6 +14,7 @@ export function HeroSection({ basePath }: HeroSectionProps) {
       aria-label="Descoperă jocurile TOKI"
       className="w-full overflow-hidden bg-[#fff8ee]"
     >
+      <h1 className="sr-only">Jocuri de societate pentru orice aventură</h1>
       {/* Desktop: keep the entire original illustration, without cropping. */}
       <div className="relative hidden w-full md:block">
         <Image
@@ -38,9 +39,9 @@ export function HeroSection({ basePath }: HeroSectionProps) {
 
       {/* Mobile: readable text, uncropped mascot and a genuine HTML button. */}
       <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-8 text-center md:hidden">
-        <h1 className="font-display text-5xl font-bold tracking-wide text-[#126ca6]">
+        <p className="font-display text-5xl font-bold tracking-wide text-[#126ca6]">
           TOKI
-        </h1>
+        </p>
         <p className="mt-3 max-w-sm text-lg font-semibold text-[#175b87]">
           Jocuri de societate pentru orice aventură
         </p>

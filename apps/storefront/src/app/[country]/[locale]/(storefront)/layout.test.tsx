@@ -29,6 +29,7 @@ import StorefrontLayout from "./layout";
 
 interface LayoutElementProps {
   children?: ReactNode;
+  desktopNavigation?: ReactElement<{ fallback: ReactNode }>;
   mobileNavigation?: ReactElement<{ fallback: ReactNode }>;
   categoryLinks?: ReactElement<{ fallback: ReactNode }>;
   fallback?: ReactNode;
@@ -44,24 +45,24 @@ describe("StorefrontLayout", () => {
 
     expect(layout.type).toBe(Fragment);
 
-    const [skipLink, , header, hiddenNavigation, main, footer] =
-      Children.toArray(
-        layout.props.children,
-      ) as ReactElement<LayoutElementProps>[];
+    const [skipLink, , header, main, footer] = Children.toArray(
+      layout.props.children,
+    ) as ReactElement<LayoutElementProps>[];
 
     expect(skipLink.type).toBe(SkipLink);
     expect(header.type).toBe(Header);
-    expect(hiddenNavigation.type).toBe(Suspense);
     expect(main.type).toBe(MainContent);
     expect(main.props.children).toBe(content);
     expect(footer.type).toBe(Footer);
 
+    const desktopNavigation = header.props.desktopNavigation;
     const mobileNavigation = header.props.mobileNavigation;
     const categoryLinks = footer.props.categoryLinks;
 
+    expect(desktopNavigation?.type).toBe(Suspense);
+    expect(desktopNavigation?.props.fallback).toBeNull();
     expect(mobileNavigation?.type).toBe(Suspense);
     expect(mobileNavigation?.props.fallback).not.toBeNull();
-    expect(hiddenNavigation.props.fallback).toBeNull();
     expect(categoryLinks?.type).toBe(Suspense);
     expect(categoryLinks?.props.fallback).not.toBeNull();
   });

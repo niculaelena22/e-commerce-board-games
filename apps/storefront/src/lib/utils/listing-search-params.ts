@@ -1,4 +1,3 @@
-
 import type {
   ActiveFilters,
   AvailabilityStatus,
@@ -23,9 +22,7 @@ export const LISTING_PARAM_KEYS = {
   gameLanguage: "game_language",
 } as const;
 
-const LISTING_OWNED_KEYS = new Set<string>(
-  Object.values(LISTING_PARAM_KEYS),
-);
+const LISTING_OWNED_KEYS = new Set<string>(Object.values(LISTING_PARAM_KEYS));
 
 export interface ListingSearchParams {
   query?: string;
@@ -36,10 +33,7 @@ type RawSearchParams =
   | URLSearchParams
   | Record<string, string | string[] | undefined>;
 
-function readFirst(
-  params: RawSearchParams,
-  key: string,
-): string | undefined {
+function readFirst(params: RawSearchParams, key: string): string | undefined {
   if (params instanceof URLSearchParams) {
     return params.get(key) ?? undefined;
   }
@@ -48,10 +42,7 @@ function readFirst(
   return Array.isArray(raw) ? raw[0] : raw;
 }
 
-function readAll(
-  params: RawSearchParams,
-  key: string,
-): string[] {
+function readAll(params: RawSearchParams, key: string): string[] {
   if (params instanceof URLSearchParams) {
     return params.getAll(key);
   }
@@ -62,47 +53,33 @@ function readAll(
   return Array.isArray(raw) ? raw : [raw];
 }
 
-function parseNonNegativeInt(
-  value: string | undefined,
-): number | undefined {
+function parseNonNegativeInt(value: string | undefined): number | undefined {
   if (value === undefined || !/^\d+$/.test(value)) {
     return undefined;
   }
 
   const parsed = Number(value);
 
-  return Number.isSafeInteger(parsed)
-    ? parsed
-    : undefined;
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
 }
 
-function parsePositiveInt(
-  value: string | undefined,
-): number | undefined {
+function parsePositiveInt(value: string | undefined): number | undefined {
   const parsed = parseNonNegativeInt(value);
 
-  return parsed !== undefined && parsed > 0
-    ? parsed
-    : undefined;
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
 }
 
 function parseComplexity(
   value: string | undefined,
 ): GameComplexity | undefined {
-  if (
-    value === "usor" ||
-    value === "mediu" ||
-    value === "avansat"
-  ) {
+  if (value === "usor" || value === "mediu" || value === "avansat") {
     return value;
   }
 
   return undefined;
 }
 
-function parseLanguage(
-  value: string | undefined,
-): GameLanguage | undefined {
+function parseLanguage(value: string | undefined): GameLanguage | undefined {
   if (value === "romana" || value === "engleza") {
     return value;
   }
@@ -114,13 +91,9 @@ export function parseListingSearchParams(
   params: RawSearchParams,
 ): ListingSearchParams {
   const query =
-    readFirst(params, LISTING_PARAM_KEYS.query)?.trim() ||
-    undefined;
+    readFirst(params, LISTING_PARAM_KEYS.query)?.trim() || undefined;
 
-  const availabilityRaw = readFirst(
-    params,
-    LISTING_PARAM_KEYS.availability,
-  );
+  const availabilityRaw = readFirst(params, LISTING_PARAM_KEYS.availability);
 
   const availability: AvailabilityStatus | undefined =
     availabilityRaw && isAvailabilityStatus(availabilityRaw)
@@ -135,14 +108,12 @@ export function parseListingSearchParams(
     readFirst(params, LISTING_PARAM_KEYS.priceMax),
   );
 
-  const optionValues = readAll(
-    params,
-    LISTING_PARAM_KEYS.option,
-  ).filter(Boolean);
+  const optionValues = readAll(params, LISTING_PARAM_KEYS.option).filter(
+    Boolean,
+  );
 
   const sortBy =
-    readFirst(params, LISTING_PARAM_KEYS.sort)?.trim() ||
-    undefined;
+    readFirst(params, LISTING_PARAM_KEYS.sort)?.trim() || undefined;
 
   const players = parsePositiveInt(
     readFirst(params, LISTING_PARAM_KEYS.players),
@@ -203,24 +174,15 @@ export function buildListingSearchParams(
 
   if (filters) {
     if (filters.priceMin !== undefined) {
-      out.set(
-        LISTING_PARAM_KEYS.priceMin,
-        String(filters.priceMin),
-      );
+      out.set(LISTING_PARAM_KEYS.priceMin, String(filters.priceMin));
     }
 
     if (filters.priceMax !== undefined) {
-      out.set(
-        LISTING_PARAM_KEYS.priceMax,
-        String(filters.priceMax),
-      );
+      out.set(LISTING_PARAM_KEYS.priceMax, String(filters.priceMax));
     }
 
     if (filters.availability) {
-      out.set(
-        LISTING_PARAM_KEYS.availability,
-        filters.availability,
-      );
+      out.set(LISTING_PARAM_KEYS.availability, filters.availability);
     }
 
     if (filters.sortBy) {
@@ -233,47 +195,30 @@ export function buildListingSearchParams(
 
     // Filtre TOKI
     if (filters.players !== undefined) {
-      out.set(
-        LISTING_PARAM_KEYS.players,
-        String(filters.players),
-      );
+      out.set(LISTING_PARAM_KEYS.players, String(filters.players));
     }
 
     if (filters.maxDuration !== undefined) {
-      out.set(
-        LISTING_PARAM_KEYS.maxDuration,
-        String(filters.maxDuration),
-      );
+      out.set(LISTING_PARAM_KEYS.maxDuration, String(filters.maxDuration));
     }
 
     if (filters.playerAge !== undefined) {
-      out.set(
-        LISTING_PARAM_KEYS.playerAge,
-        String(filters.playerAge),
-      );
+      out.set(LISTING_PARAM_KEYS.playerAge, String(filters.playerAge));
     }
 
     if (filters.complexity) {
-      out.set(
-        LISTING_PARAM_KEYS.complexity,
-        filters.complexity,
-      );
+      out.set(LISTING_PARAM_KEYS.complexity, filters.complexity);
     }
 
     if (filters.gameLanguage) {
-      out.set(
-        LISTING_PARAM_KEYS.gameLanguage,
-        filters.gameLanguage,
-      );
+      out.set(LISTING_PARAM_KEYS.gameLanguage, filters.gameLanguage);
     }
   }
 
   return out;
 }
 
-export function listingKey(
-  state: ListingSearchParams,
-): string {
+export function listingKey(state: ListingSearchParams): string {
   return JSON.stringify({
     q: state.query ?? "",
     s: state.filters.sortBy ?? "",

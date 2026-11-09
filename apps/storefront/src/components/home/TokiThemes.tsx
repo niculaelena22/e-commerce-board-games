@@ -1,13 +1,12 @@
-
-import Link from "next/link";
 import {
   Castle,
-  Ghost,
   Compass,
+  Ghost,
   Rocket,
   Search,
   WandSparkles,
 } from "lucide-react";
+import Link from "next/link";
 
 const themes = [
   {
@@ -48,11 +47,7 @@ const themes = [
   },
 ];
 
-export function TokiThemes({
-  basePath,
-}: {
-  basePath: string;
-}) {
+export function TokiThemes({ basePath }: { basePath: string }) {
   return (
     <section
       aria-labelledby="toki-themes-title"

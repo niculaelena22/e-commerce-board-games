@@ -72,21 +72,41 @@ export async function Header({
   return (
     <SearchToggle
       basePath={basePath}
-      left={<><div className="lg:hidden">{mobileNavigation}</div><div className="hidden lg:flex items-center">
-        <Link href={basePath || "/"} aria-label="Acasă TOKI"><Image src="/TOKI-LOGO.png" alt={storeName} width={1241} height={700} className="h-12 w-auto" priority /></Link>
-      </div></>}
+      left={
+        <>
+          <div className="lg:hidden">{mobileNavigation}</div>
+          <div className="hidden lg:flex items-center">
+            <Link href={basePath || "/"} aria-label="Acasă TOKI">
+              <Image
+                src="/TOKI-LOGO.png"
+                alt={storeName}
+                width={1241}
+                height={700}
+                className="h-12 w-auto"
+                priority
+              />
+            </Link>
+          </div>
+        </>
+      }
       center={
-        <><div className="hidden lg:block">{desktopNavigation}</div><Link href={basePath || "/"} className="flex items-center min-w-0 lg:hidden">
-          <Image
-            src="/TOKI-LOGO.png"
-            alt={storeName}
-            width={1241}
-            height={700}
-            className="h-10 w-auto max-w-full object-contain"
-            fetchPriority="high"
-            loading="eager"
-          />
-        </Link></>
+        <>
+          <div className="hidden lg:block">{desktopNavigation}</div>
+          <Link
+            href={basePath || "/"}
+            className="flex items-center min-w-0 lg:hidden"
+          >
+            <Image
+              src="/TOKI-LOGO.png"
+              alt={storeName}
+              width={1241}
+              height={700}
+              className="h-10 w-auto max-w-full object-contain"
+              fetchPriority="high"
+              loading="eager"
+            />
+          </Link>
+        </>
       }
       rightStart={
         <div className="hidden lg:flex lg:items-center lg:gap-1">

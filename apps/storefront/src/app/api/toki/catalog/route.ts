@@ -4,28 +4,35 @@ import { getClient } from "@/lib/spree";
 export async function GET() {
   try {
     const response = await getClient().products.list(
-      { limit: 100, expand: ["custom_fields"] },
+      { limit: 100, expand: ["custom_fields", "categories"] },
       { locale: "ro", country: "RO" },
     );
     const products = (response.data ?? []).map((product) => ({
       id: String(product.id),
       name: product.name,
       slug: product.slug,
-      description: (product.description ?? "")
-        .replace(/<[^>]*>/g, " ")
-        .slice(0, 800),
       image: product.thumbnail_url ?? null,
       price: product.price
         ? `${product.price.amount} ${product.price.currency}`
         : null,
+      tags: (product.tags ?? []).slice(0, 12),
+      categories: (product.categories ?? []).map((category) => ({
+        name: category.name,
+        permalink: category.permalink,
+      })),
       fields: (product.custom_fields ?? []).map((field) => ({
-        label: field.label,
-        value: String(field.value ?? ""),
+        label: field.label.slice(0, 80),
+        value: String(field.value ?? "").slice(0, 120),
       })),
     }));
     return NextResponse.json(
       { products },
-      { headers: { "Cache-Control": "no-store" } },
+      {
+        headers: {
+          "Cache-Control":
+            "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
     );
   } catch (error) {
     console.error("TOKI catalog error", error);

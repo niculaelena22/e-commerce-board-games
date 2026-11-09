@@ -1,6 +1,6 @@
 import type { Category } from "@spree/sdk";
-import Link from "next/link";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { connection } from "next/server";
 import { cache, Suspense } from "react";
 import { Footer, FooterCategoryLinks } from "@/components/layout/Footer";
@@ -64,29 +64,6 @@ const getRootCategories = cache(async (country: string, locale: string) => {
     });
 });
 
-function CategoryLinks({
-  categories,
-  basePath,
-}: {
-  categories: Category[];
-  basePath: string;
-}) {
-  return (
-    <ul>
-      {categories.map((category) => (
-        <li key={category.id}>
-          <Link href={`${basePath}/c/${category.permalink}`}>
-            {category.name}
-          </Link>
-          {category.children && category.children.length > 0 && (
-            <CategoryLinks categories={category.children} basePath={basePath} />
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 async function StorefrontMobileNavigation({
   basePath,
   country,
@@ -110,7 +87,20 @@ async function StorefrontCategoryNavigation({
 
   return (
     <nav aria-label="Category navigation" className="max-w-[min(66vw,850px)]">
-      <div className="overflow-x-auto"><ul className="flex min-h-12 items-center gap-4 whitespace-nowrap text-sm font-semibold text-[#195e8b] xl:gap-6">{rootCategories.slice(0, 10).map((category) => <li key={category.id}><Link className="inline-flex min-h-11 items-center hover:text-[#0c426c] hover:underline underline-offset-4" href={`${basePath}/c/${category.permalink}`}>{category.name}</Link></li>)}</ul></div>
+      <div className="overflow-x-auto">
+        <ul className="flex min-h-12 items-center gap-4 whitespace-nowrap text-sm font-semibold text-[#195e8b] xl:gap-6">
+          {rootCategories.slice(0, 10).map((category) => (
+            <li key={category.id}>
+              <Link
+                className="inline-flex min-h-11 items-center hover:text-[#0c426c] hover:underline underline-offset-4"
+                href={`${basePath}/c/${category.permalink}`}
+              >
+                {category.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     </nav>
   );
 }
@@ -141,7 +131,15 @@ export default async function StorefrontLayout({
       <Header
         basePath={basePath}
         locale={locale as Locale}
-        desktopNavigation={<Suspense fallback={null}><StorefrontCategoryNavigation basePath={basePath} country={country} locale={locale} /></Suspense>}
+        desktopNavigation={
+          <Suspense fallback={null}>
+            <StorefrontCategoryNavigation
+              basePath={basePath}
+              country={country}
+              locale={locale}
+            />
+          </Suspense>
+        }
         mobileNavigation={
           <Suspense fallback={<MobileNavigationFallback />}>
             <StorefrontMobileNavigation

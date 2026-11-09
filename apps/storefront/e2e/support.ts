@@ -67,6 +67,8 @@ export async function openFirstCategory(page: Page): Promise<string> {
  */
 export async function openCategoryFromMenu(page: Page): Promise<string> {
   const { name: topLevel } = await firstCategory(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(BASE_PATH);
   const menuButton = page.getByRole("button", { name: "Open menu" });
   await waitForHydration(menuButton);
   await menuButton.click();
